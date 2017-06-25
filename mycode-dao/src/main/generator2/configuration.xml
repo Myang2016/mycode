@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <classPathEntry location="ojdbc14.jar"/>
+
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+        <plugin type="com.lz.cts.plugin.OraclePaginationPlugin"></plugin>
+        <plugin type="com.lz.cts.plugin.ModelFieldCustomizePlugin"></plugin>
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>
+
+        <commentGenerator>
+            <property name="suppressDate" value="true"/>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <jdbcConnection driverClass="oracle.jdbc.driver.OracleDriver"
+                        connectionURL="jdbc:oracle:thin:@192.168.7.11:1521:testdb" userId="bcmc"
+                        password="bcmc">
+            <property name="remarks" value="true"/>
+        </jdbcConnection>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+        <!-- 生成模型的包名和位置 -->
+        <javaModelGenerator targetPackage="com.unicompayment.bcmc.common.domain"
+                            targetProject="../java">
+            <property name="enableSubPackages" value="true"/>
+            <!--<property name="trimStrings" value="true" />-->
+            <!-- <property name="rootClass" value="com.lz.common.dao.domain.BaseEntity" /> -->
+        </javaModelGenerator>
+        <!-- 生成的映射文件包名和位置 -->
+        <sqlMapGenerator targetPackage="com.unicompayment.bcmc.common.dao.mybatisimpl.mapper"
+                         targetProject="../resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+        <!-- 生成DAO的包名和位置 -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.unicompayment.bcmc.common.dao.mybatisimpl.mapper"
+                             targetProject="../java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <table tableName="BCMC_BANK_VALIDATE_LOG" domainObjectName="BankValidateLog"/>
+
+        <!--
+        <table tableName="BCMC_QUICKPAY_PARM" domainObjectName="QuickpayParam"  />
+        <table tableName="BCMC_BANK_CARD_INTERIM" domainObjectName="BcmcBankCardInterim"  />
+        <table tableName="BCMC_BANK_CARD_PAYMENT_DELETE" domainObjectName="BankCardPaymentPaymentDelete"  />
+        <table tableName="BCMC_BANK_CARD_PAYMENT" domainObjectName="BankCardPayment"  />
+        <table tableName="BCMC_BIZ" domainObjectName="Biz"  />
+        <table tableName="BCMC_BANK_CARD" domainObjectName="BankCard"  />
+        <table tableName="BCMC_BANK_CARD_PAYMENT" domainObjectName="BankCardPayment"  />
+        <table tableName="BCMC_BANK_TYPE" domainObjectName="BankType"  />
+        <table tableName="BCMC_BANK_VALIDATION_CHANNEL" domainObjectName="BankValidationChannel"  />
+        <table tableName="BCMC_BIZ_2_VC" domainObjectName="Biz2Vc"  />
+        <table tableName="BCMC_BUSINESS_LOG" domainObjectName="BusinessLog"  />
+        <table tableName="BCMC_EXCEPTION" domainObjectName="Exception"  />
+        <table tableName="BCMC_MESSAGE_LOG_CONTENT" domainObjectName="MessageLogContent"  />
+        <table tableName="BCMC_BANK_CARD_PAYMENT_INTERIM" domainObjectName="BankCardPaymentInterim"  />
+        <table tableName="BCMC_BANK_CARD_DELETE" domainObjectName="BankCardDelete"  />-->
+
+    </context>
+</generatorConfiguration>

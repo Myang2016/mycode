@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+    <import resource="classpath*:default-module-dao-mybatis.xml"/>
+
+    <import resource="spring-jedis-context.xml"/>
+
+    <bean id="messageSource"
+          class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>consMsg</value>
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:config.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName">
+            <value>${jdbc.driverclass}</value>
+        </property>
+        <property name="url">
+            <value>${jdbc.url}</value>
+        </property>
+        <property name="username">
+            <value>${jdbc.username}</value>
+        </property>
+        <property name="password">
+            <value>${jdbc.password}</value>
+        </property>
+        <property name="connectionProperties" value="config.decrypt=false"/>
+        <property name="initialSize" value="${jdbc.initialSize}"/>
+        <!-- 最大连接池数量 -->
+        <property name="maxActive" value="200"/>
+        <!-- 最小空闲连接数 -->
+        <property name="minIdle" value="10"/>
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000"/>
+        <!-- 超过时间限制是否回收 -->
+        <property name="removeAbandoned" value="true"/>
+        <!-- 超过时间限制多长； -->
+        <property name="removeAbandonedTimeout" value="180"/>
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <!-- 用来检测连接是否有效的sql，要求是一个查询语句 -->
+        <property name="validationQuery" value="SELECT 1 FROM DUAL"/>
+        <!-- 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。 -->
+        <property name="testWhileIdle" value="true"/>
+        <!-- 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。 -->
+        <property name="testOnBorrow" value="false"/>
+        <!-- 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能 -->
+        <property name="testOnReturn" value="false"/>
+        <property name="timeBetweenLogStatsMillis" value="30000"/>
+        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize"
+                  value="50"/>
+        <!--类型是List<com.alibaba.druid.filter.Filter>，如果同时配置了filters和proxyFilters，是组合关系，并非替换关系-->
+        <property name="proxyFilters">
+            <list>
+                <ref bean="stat-filter"/>
+                <ref bean="log-filter"/>
+            </list>
+        </property>
+        <!--属性类型是字符串，通过别名的方式配置扩展插件，常用的插件有：
+             监控统计用的filter:stat 日志用的filter:log4j 防御sql注入的filter:wall-->
+        <property name="filters" value="stat"/>
+    </bean>
+
+    <bean id="log-filter" class="com.alibaba.druid.filter.logging.Slf4jLogFilter">
+        <property name="statementExecutableSqlLogEnable" value="true"/>
+        <property name="dataSourceLogEnabled" value="true"/>
+        <property name="connectionLogEnabled" value="true"/>
+        <property name="connectionLogErrorEnabled" value="true"/>
+        <property name="statementLogEnabled" value="true"/>
+        <property name="statementLogErrorEnabled" value="true"/>
+        <property name="resultSetLogEnabled" value="false"/>
+    </bean>
+
+    <bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+        <!-- 记录慢查询日志，查询超过100ms即为慢查询 -->
+        <property name="slowSqlMillis" value="100"/>
+        <property name="logSlowSql" value="true"/>
+    </bean>
+
+    <bean name="txManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <tx:annotation-driven proxy-target-class="false"
+                          transaction-manager="txManager"/>
+
+    <!-- 缓存配置(两种) -->
+    <!-- 启用缓存注解功能(请将其配置在Spring主配置文件中) -->
+    <cache:annotation-driven cache-manager="cacheManager"/>
+    <!-- Spring自己的基于java.util.concurrent.ConcurrentHashMap实现的缓存管理器(该功能是从Spring3.1开始提供的) -->
+    <!--
+    <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+        <property name="caches">
+            <set>
+                <bean name="myCache" class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"/>
+            </set>
+        </property>
+    </bean>
+     -->
+    <!-- 若只想使用Spring自身提供的缓存器,则注释掉下面的两个关于Ehcache配置的bean,并启用上面的SimpleCacheManager即可 -->
+    <!-- Spring提供的基于的Ehcache实现的缓存管理器 -->
+    <bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+    </bean>
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <property name="cacheManager" ref="cacheManagerFactory"/>
+    </bean>
+
+    <!--
+        <bean id="multipartResolver"
+            class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+            p:defaultEncoding="UTF-8" p:maxUploadSize="10485760" />-->
+
+</beans>

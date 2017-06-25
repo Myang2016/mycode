@@ -1,0 +1,95 @@
+<configuration debug="true">
+    <property name="logs.path.root" value="/app/myang/logs"/>
+    <!-- <include resource="logback-access.xml"/> -->
+
+    <appender name="A_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder
+            by default -->
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS, GMT+8} [%thread] %-5level %c{1} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="A_DEBUG"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logs.path.root}/bas/basDebug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${logs.path.root}/bas/basDebug.%d{yyyy-MM-dd}.log.gz
+            </fileNamePattern>
+
+            <!-- keep 180 days worth of history -->
+            <maxHistory>180</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS, GMT+8} [%thread] %-5level %c{1} - %msg%n</pattern>
+        </encoder>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+
+    <appender name="A_ERROR"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logs.path.root}/bas/basError.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${logs.path.root}/bas/basError.%d{yyyy-MM-dd}.log.gz
+            </fileNamePattern>
+
+            <!-- keep 180 days worth of history -->
+            <maxHistory>180</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS, GMT+8} [%thread] %-5level %c{1} - %msg%n</pattern>
+        </encoder>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
+    <appender name="TRACE_LOG"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名 -->
+            <FileNamePattern>${logs.path.root}/bas/trace/trace.log.%d{yyyy-MM-dd}-%i.log
+            </FileNamePattern>
+            <!--日志文件保留天数 -->
+            <MaxHistory>30</MaxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <MaxFileSize>100MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符 -->
+            <pattern>%X{wppTraceId}-%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]
+                %-5level %logger{50} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- loggers -->
+
+    <!-- <logger name="com.unicompayment.frwp">
+        <level value="DEBUG" />
+        <appender-ref ref="A_FACADE_CIF" />
+    </logger>  -->
+
+    <!-- 强制设置sql log级别，覆盖rootlogger -->
+
+    <root level="${efrwp.log.level}">
+        <appender-ref ref="A_STDOUT"/>
+        <appender-ref ref="A_DEBUG"/>
+        <appender-ref ref="A_ERROR"/>
+    </root>
+
+</configuration>
